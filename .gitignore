@@ -1,0 +1,73 @@
+# ============================
+#  PYTHON / STREAMLIT PROJECT
+# ============================
+
+# --- Environment & Secrets ---
+.env
+*.env
+.env.local
+.env.prod
+.env.dev
+.env.testing
+secrets.toml
+.streamlit/secrets.toml
+
+# --- Virtual Environment ---
+venv/
+.env/
+env/
+.venv/
+
+# --- Streamlit cache ---
+.streamlit/cache/
+.streamlit/local_storage/
+.streamlit/logs/
+.streamlit/credentials.toml
+
+# --- Python cache ---
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+*.pdb
+*.pkl
+*.pickle
+*.pyd
+
+# --- Build / Distribution ----
+build/
+dist/
+*.egg-info/
+*.eggs/
+
+# --- Logs ---
+*.log
+
+# --- Backup files ---
+*.bak
+*.tmp
+*.swp
+*.swo
+
+# --- MacOS junk ---
+.DS_Store
+.AppleDouble
+.LSOverride
+
+# --- VSCode workspace junk ---
+.vscode/
+.history/
+*.code-workspace
+
+# --- Jupyter ---
+.ipynb_checkpoints/
+
+# --- Node modules (if future frontend added) ---
+node_modules/
+
+# --- PDFs or uploads (optional for privacy) ---
+uploads/
+*.pdf
+
+# --- Project-specific ---
+study_buddy_project.db
