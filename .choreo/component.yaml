@@ -1,23 +1,31 @@
-schemaVersion: "1.2"
-kind: ComponentConfig
+schemaVersion: 2.0
+type: application
 
 metadata:
-  name: study-buddy-project
-  description: Telegram bot for Study Buddy AI. Runs continuously as a background worker.
+  name: study-buddy-ai-bot
+  description: Telegram Study Buddy AI bot running as a background worker.
 
 build:
-  commands:
-    - pip install --upgrade pip
-    - pip install -r requirements_bot.txt
+  env:
+    - name: PIP_DEFAULT_TIMEOUT
+      value: "100"
+
+  steps:
+    - name: Install dependencies
+      command: pip install --upgrade pip && pip install -r requirements_bot.txt
 
 run:
   command: python bot.py
+  restartPolicy: always
+
+container:
+  port: 8080     # Required even for worker bots
+  startCommand: python bot.py
 
 network:
-  type: none
+  expose: false   # <-- No incoming HTTP traffic (Telegram uses polling)
 
 scaling:
-  mode: manual
   minReplicas: 1
   maxReplicas: 1
 
