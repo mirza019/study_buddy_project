@@ -2,25 +2,31 @@ schemaVersion: 1.2
 kind: Component
 
 metadata:
-  name: study-buddy-bot
-  description: Telegram bot for Study Buddy AI (always-on background worker)
+  name: study-buddy-project
+  description: Telegram Bot for StudyBuddy AI
 
 build:
-  env:
-    - name: PIP_NO_CACHE_DIR
-      value: "1"
-
+  builder: docker.io/library/python:3.11
   commands:
     - pip install --upgrade pip
     - pip install -r requirements_bot.txt
 
 run:
-  command: python bot.py
+  command: bash -c "python3 health.py & python3 bot.py"
+  containerPort: 8000
+
+endpoints:
+  - name: health
+    port: 8000
+    type: REST
+    networkVisibility: Public
+    contextPath: /
 
 network:
-  type: NONE   # background worker, no HTTP port needed
+  expose: true
 
 scaling:
+  mode: manual
   minReplicas: 1
   maxReplicas: 1
 
