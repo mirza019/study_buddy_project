@@ -292,6 +292,38 @@ Rules:
 - "focus_if_wrong" must directly reference a real concept, section, or idea implied by the PDF content.
 - In feedback scripts ALWAYS mention what the learner chose and what was actually correct.
 - Output MUST be valid JSON only. No markdown, no commentary, no ``` fences.
+
+IMPORTANT ― ANSWER DISTRIBUTION RULES (MANDATORY):
+- You MUST distribute correct answers RANDOMLY across A, B, C, and D.
+- You MUST avoid repeating the same correct_answer_key more than 2 times in a row.
+- The final set of 17 questions MUST include:
+    * Minimum 3 correct answers = "A"
+    * Minimum 3 correct answers = "B"
+    * Minimum 3 correct answers = "C"
+    * Minimum 3 correct answers = "D"
+- The remaining answers (17 - 12 = 5) may be ANY of A/B/C/D.
+- NEVER default to one letter (like B or C). No clustering. No patterns.
+- The distribution MUST look naturally random.
+
+Difficulty Levels (MANDATORY):
+
+- Questions 1–5 → EASY  
+  • Require basic recall and simple understanding  
+  • Direct facts, definitions, straightforward concepts  
+
+- Questions 6–10 → MEDIUM  
+  • Require interpretation, application, or moderate reasoning  
+  • Slightly tricky distractors  
+  • Multi-step understanding  
+
+- Questions 11–17 → HARD  
+  • Require deep reasoning, synthesis, cross-linking ideas  
+  • Situational analysis, conceptual traps, or subtle distinctions  
+  • Hard distractors that require attention  
+
+Each question must clearly reflect the intended difficulty level.
+
+
     """
 
     response = client.models.generate_content(
@@ -635,7 +667,10 @@ def generate_gods_message(user_info: Dict[str, Any]) -> str:
     """
     client = get_client()
     gender = user_info.get("gender", "female").lower()
-    name = user_info.get("name", "my dear")
+    name = user_info.get("name", "")
+
+    if not name:
+        name = "my dear"
 
     prompt = f"""
 You are an Islamic scholar AI that must provide ONLY peaceful Islamic study-related reminders.
@@ -660,7 +695,7 @@ Tone rules:
 
 Output format:
 A single Islamic reminder message including:
-1. Arabic text
+1. Transliteration (Roman Arabic)
 2. English meaning
 3. Reference number
 4. A small motivational line in gender-specific tone
