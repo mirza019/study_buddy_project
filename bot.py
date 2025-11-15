@@ -102,7 +102,7 @@ def build_answer_keyboard():
 
 def build_results_keyboard() -> InlineKeyboardMarkup:
     keyboard = [
-        [InlineKeyboardButton("💌 Daily Romantic Message", callback_data="daily_msg")],
+        [InlineKeyboardButton("💌 Buddy's Message", callback_data="daily_msg")],
         [InlineKeyboardButton("🌙 Night Whisper", callback_data="night_msg")],
         [InlineKeyboardButton("🕊 God's Message for You", callback_data="gods_msg")],
         [
