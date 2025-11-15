@@ -680,6 +680,7 @@ User gender: {gender}
 User name: {name}
 
 STRICT RULES:
+-Randonly select a Quran verse or hadith that fits the criteria below.
 - ONLY peaceful, non-controversial Quran verses or hadith.
 - Must relate to: studying, knowledge, mental peace, sabr, emotional strength.
 - MUST include the reference number (e.g., Quran 20:114, Tirmidhi 2516).
