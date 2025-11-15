@@ -5,4 +5,4 @@ google-genai
 pypdf
 PyPDF2
 pillow
-huggingface_hub
+
