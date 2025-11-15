@@ -17,10 +17,11 @@ run:
 
 endpoints:
   - name: health
-    port: 8000
     type: REST
     networkVisibility: Public
     contextPath: /
+    service:
+      port: 8000
 
 network:
   expose: true
