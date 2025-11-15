@@ -674,7 +674,7 @@ def generate_gods_message(user_info: Dict[str, Any]) -> str:
 
     prompt = f"""
 You are an Islamic scholar AI that must provide ONLY peaceful Islamic study-related reminders.
-You must generate ONE message only depending on the user's gender.
+You must generate ONE message only depending on the user's mood.
 
 User gender: {gender}
 User name: {name}
@@ -683,7 +683,7 @@ STRICT RULES:
 -Randonly select a Quran verse or hadith that fits the criteria below.
 - ONLY peaceful, non-controversial Quran verses or hadith.
 - Must relate to: studying, knowledge, mental peace, sabr, emotional strength.
-- MUST include the reference number (e.g., Quran 20:114, Tirmidhi 2516).
+- MUST include the reference number.
 - References must be accurate and safe.
 - DO NOT include verses about war, punishment, enemies, violence, or any controversial context.
 - If quoting a verse with multiple themes, ONLY use the peaceful part.
