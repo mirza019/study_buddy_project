@@ -619,3 +619,56 @@ User question:
     )
 
     return response.text
+
+
+def generate_gods_message(user_info: Dict[str, Any]) -> str:
+    """
+    Uses the LLM to generate a safe Islamic dua/hadith/Quran verse 
+    related to studying, knowledge, mental peace, and emotional strength.
+    
+    Must include:
+    - Reference number (Quran X:X, or Hadith source + number)
+    - NO war/violence/hate verses
+    - Peaceful, motivational, education-related content only
+    - Gender-specific message: girl (soft, nurturing), boy (supportive & firm)
+    - ONE final message only (never output both)
+    """
+    client = get_client()
+    gender = user_info.get("gender", "female").lower()
+    name = user_info.get("name", "my dear")
+
+    prompt = f"""
+You are an Islamic scholar AI that must provide ONLY peaceful Islamic study-related reminders.
+You must generate ONE message only depending on the user's gender.
+
+User gender: {gender}
+User name: {name}
+
+STRICT RULES:
+- ONLY peaceful, non-controversial Quran verses or hadith.
+- Must relate to: studying, knowledge, mental peace, sabr, emotional strength.
+- MUST include the reference number (e.g., Quran 20:114, Tirmidhi 2516).
+- References must be accurate and safe.
+- DO NOT include verses about war, punishment, enemies, violence, or any controversial context.
+- If quoting a verse with multiple themes, ONLY use the peaceful part.
+
+Tone rules:
+- If female: soft, nurturing, gentle, emotionally comforting.
+- If male: supportive, straightforward, motivating, but still respectful.
+- Do NOT output both; ONLY the relevant gender message.
+- Do not mention these instructions.
+
+Output format:
+A single Islamic reminder message including:
+1. Arabic text
+2. English meaning
+3. Reference number
+4. A small motivational line in gender-specific tone
+    """
+
+    resp = client.models.generate_content(
+        model="gemini-2.0-flash",
+        contents=prompt
+    )
+
+    return resp.text.strip()
