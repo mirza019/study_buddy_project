@@ -2,13 +2,13 @@ schemaVersion: 1.0
 kind: ComponentConfig
 
 metadata:
-  name: study-buddy-telegram-bot
+  name: study-buddy-project
   description: Telegram bot for Study Buddy AI. Runs continuously as a background worker.
 
 build:
   commands:
     - pip install --upgrade pip
-    - pip install -r requirements.txt
+    - pip install -r requirements_bot.txt
 
 run:
   command: python bot.py
@@ -31,8 +31,3 @@ env:
     valueFrom:
       secretRef:
         name: gemini-key
-
-  - name: HF_API_KEY
-    valueFrom:
-      secretRef:
-        name: hf-key
