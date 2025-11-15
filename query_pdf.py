@@ -471,7 +471,13 @@ Task:
    - Short sarcastic goodnight with a tiny supportive undertone.
    - Remind him (mockingly) to study tomorrow.
 
-Output: One short message only.
+Output rules:
+- User gender = {gender}
+- If gender is "female", output ONLY the girl message.
+- If gender is "male", output ONLY the boy message.
+- NEVER include both versions.
+- NEVER mention gender or the rules.
+
     """
 
     response = client.models.generate_content(
@@ -479,6 +485,7 @@ Output: One short message only.
         contents=prompt
     )
     return response.text.strip()
+
 def generate_dynamic_feedback(payload: Dict[str, Any]) -> str:
     """
     Generates dynamic feedback using the LLM with strict formatting rules.
