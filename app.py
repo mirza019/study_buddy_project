@@ -252,7 +252,7 @@ def page_results():
 
     st.markdown("---")
 
-    if st.button("💌 Daily Romantic Message"):
+    if st.button("💌 Today's Message"):
         msg = generate_daily_romantic_message(user, st.session_state.quiz_data)
         render_text(msg)
 

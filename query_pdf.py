@@ -1,6 +1,12 @@
 import os
 import json
 from typing import List, Dict, Any, Optional
+import os
+from google.genai import Client
+from dotenv import load_dotenv
+load_dotenv()
+
+client = Client(api_key=os.getenv("GEMINI_API_KEY"))
 
 from PyPDF2 import PdfReader
 from google import genai
@@ -51,9 +57,11 @@ def _build_persona_block(user_info: Dict[str, Any]) -> str:
     if gender == "female":
         return f"""
 You are speaking to a girl named {name} from {country}.
-You are her extremely romantic, dramatic, clingy, loving boyfriend.
+You are her extremely friendly, romantic, dramatic, clingy, loving boyfriend.
 
 STYLE:
+- Start conversation with friendly natured, then get romantic
+- Use dramatic, emotional, protective boyfriend tone
 - Overly romantic
 - Overly dramatic
 - Clingy & emotional
@@ -169,7 +177,7 @@ BEHAVIOR RULES (GENERATE UNIQUE EACH TIME):
 
 3. Correct answer:
    - Minimal praise, mostly mocking.
-   - E.g., “Oh look, your brain finally did something useful.” (but you must create new lines each time)
+   - Use different discouragement sentences randomly E.g., “Oh look, your brain finally did something useful.” (but you must create new lines each time)
    - Still include a short explanation why it’s correct.
 
 4. Wrong answer:
@@ -225,7 +233,7 @@ PDF CONTENT:
 Your task is to output STRICT JSON with the following structure ONLY:
 
 IMPORTANT EXTRA RULES FOR CONTENT QUALITY:
-- The summary and study guide should be big and detailed enough that a student could 
+- The details explainations and study guide should be large and detailed enough that a student could 
   understand the full picture and know what to focus on for exams.
 - Nuance notes must highlight: typical mistakes, tricky concepts, hidden assumptions, 
   and exam-style pitfalls.
@@ -234,7 +242,7 @@ IMPORTANT EXTRA RULES FOR CONTENT QUALITY:
 STRUCTURE (MUST MATCH EXACTLY THESE KEYS):
 
 {{
-  "sweet_summary": "A 5–10 sentence summary of the document in the persona's tone (romantic boyfriend or sarcastic ex). It should describe what the PDF covers, main ideas, and why it’s important for exam. Use emotional tone matching the persona.",
+  "sweet_summary": "A 20-30 sentence explaination of the document in the persona's tone (romantic boyfriend or sarcastic ex). It should describe what the PDF covers, main ideas, and why it’s important for exam. Use emotional tone matching the persona.",
 
   "study_guide": {{
     "overall_advice": "High-level explanation of what this PDF is mainly about, in simple words. At least 6–10 sentences.",
@@ -567,3 +575,40 @@ Now produce the final feedback message:
     )
 
     return response.text.strip()
+
+def run_chat_from_pdf(question, pdf_text, user_info):
+
+    prompt = f"""
+You are StudyBuddy AI.
+
+Personality Rules:
+- If the user is female:
+      Respond like a caring, romantic, supportive boyfriend.
+      Be soft, warm, sweet, and gently playful.
+- If the user is male:
+      Respond like a sarcastic, teasing ex-girlfriend.
+      Be witty, a bit rude but helpful, playful, and slightly flirty.
+- Let your tone adapt naturally based on the user's country (Bangladesh, Iran, Germany, etc.)
+  using your own linguistic knowledge. Do NOT force predefined phrases.
+
+Knowledge Rules:
+1. First, try to answer based on the PDF content.
+2. If the answer is NOT present in the PDF:
+       Start your reply with this exact line:
+       "📘 This part is not fully in the PDF, using my own knowledge too."
+3. Then provide a helpful explanation from your own knowledge.
+4. Keep the reply short, clear, and in your gender-based personality.
+
+PDF CONTENT (truncated for safety):
+{pdf_text[:8000]}
+
+User question:
+"{question}"
+"""
+
+    response = client.models.generate_content(
+        model="gemini-2.0-flash",
+        contents=prompt
+    )
+
+    return response.text

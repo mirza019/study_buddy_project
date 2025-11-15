@@ -13,8 +13,23 @@
 **Live App:**  
 https://studybudddy.streamlit.app/
 
+👉 **Try the bot:**  
+https://t.me/StudyBudddyAI_bot
+
 **GitHub Repository:**  
 https://github.com/mirza019/study_buddy_project
+
+## 🤖 Telegram Bot — StudyBuddyAI
+
+StudyBuddyAI is now available on Telegram!  
+Upload any study PDF and instantly:
+
+- 📘 Automatic PDF reading & soft summary  
+- 📝 Personalized study guide  
+- 💬 **Chat with your PDF** — ask anything  
+- ❗ If your question is NOT in the PDF, the bot will tell you and answer using general knowledge (like ChatGPT/Gemini)  
+- 🧠 Smart 17-question quiz  
+- 🎯 Weak-topic detection & study advice  
 
 
 </div>
