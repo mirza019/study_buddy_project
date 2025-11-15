@@ -1,7 +1,7 @@
-python-telegram-bot==20.7
+python-telegram-bot==21.6
 python-dotenv
 google-genai
-PyPDF2
 pypdf
+PyPDF2
 httpx==0.23.3
 pillow
