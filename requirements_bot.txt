@@ -1,0 +1,7 @@
+python-telegram-bot==20.8
+python-dotenv
+PyPDF2
+google-genai
+httpx
+pydantic
+Pillow
