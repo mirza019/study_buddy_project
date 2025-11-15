@@ -25,6 +25,7 @@ from query_pdf import (
     generate_post_quiz_focus_advice,
     generate_daily_romantic_message,
     generate_night_mode_message,
+    generate_gods_message,
 )
 
 # ============================================================
@@ -99,15 +100,18 @@ def build_answer_keyboard():
     ])
 
 
-def build_results_keyboard():
-    return InlineKeyboardMarkup([
-        [InlineKeyboardButton("💌 Today's Message", callback_data="daily_msg")],
+def build_results_keyboard() -> InlineKeyboardMarkup:
+    keyboard = [
+        [InlineKeyboardButton("💌 Daily Romantic Message", callback_data="daily_msg")],
         [InlineKeyboardButton("🌙 Night Whisper", callback_data="night_msg")],
+        [InlineKeyboardButton("🕊 God's Message for You", callback_data="gods_msg")],
         [
-            InlineKeyboardButton("🔁 Play Again", callback_data="play_again"),
+            InlineKeyboardButton("🔁 Play Again (same PDF)", callback_data="play_again"),
             InlineKeyboardButton("🔄 Start Over", callback_data="restart"),
-        ]
-    ])
+        ],
+    ]
+    return InlineKeyboardMarkup(keyboard)
+
 
 
 # ============================================================
@@ -312,7 +316,8 @@ async def handle_text(update: Update, context):
         await context.bot.send_message(chat_id, "Choose an option:", reply_markup=build_results_keyboard())
 
         extra = (
-            "Good night sweetheart 🌙💗"
+            "💖 Remember, my lovely queen, rest is just as important as study! Take care of yourself. 👑"
+          
             if user["gender"] == "female"
             else "Don't pretend to study all night bro 😒"
         )
@@ -427,6 +432,12 @@ async def handle_buttons(update: Update, context):
         await context.bot.send_message(chat_id, "Starting quiz ❤️")
         await send_question(context, chat_id, state)
         return
+
+    if data == "gods_msg":
+        msg = generate_gods_message(state["user_info"])
+        await send_long_message(context, chat_id, msg)
+        return
+
 
     # answer buttons
     if data.startswith("ans_"):
