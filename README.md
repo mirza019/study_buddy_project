@@ -127,3 +127,38 @@ Randomly uses **cute love words** (SAFE ONLY):
 - *shona* (golden one)  
 - *pran* (my life)  
 - *moner manush* (person of my h
+# 📝 StudyBuddy AI — Update Summary (Latest Changes)
+
+## ✅ 1. Combined Multiple Setup Pages Into One
+- Name, Gender, Country, and Mood are now displayed on **one unified page**.
+- Removed the old step-by-step navigation (pages 1–4).
+- Cleaner, faster, more user-friendly onboarding.
+
+## ✅ 2. Added Input Validation
+- User cannot continue without entering a name.
+- Country and mood are optional but handled cleanly.
+- Avoids accidental blank submissions.
+
+## ✅ 3. Updated User Information Storage
+All values are saved at once into `st.session_state.user_info`:
+- `name`
+- `gender`
+- `country`
+- `mood_before`
+
+## ✅ 4. Improved Navigation Flow
+New sequence:
+- Setup Page → PDF Upload → Processing → Study Guidance → Chat/Quiz Menu
+
+## ✅ 5. PDF Upload Page Unchanged
+- PDF upload remains its own dedicated page.
+- Clear separation between user info and document handling.
+
+## ✅ 6. Button Flow Updated
+- New button: **“Next ➜”** on the unified setup page.
+- Leads directly to the PDF upload step.
+
+## 🎯 Result
+- Reduced friction during onboarding.
+- Fewer clicks required.
+- More modern and intuitive user experience.
