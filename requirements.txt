@@ -1,7 +1,7 @@
 python-telegram-bot==21.6
 python-dotenv
 httpx
-google-genai
+
 google-generativeai>=0.8.0
 
 pypdf
