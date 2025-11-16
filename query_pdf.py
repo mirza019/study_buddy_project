@@ -16,15 +16,63 @@ from google import genai
 #   GEMINI CLIENT HELPER
 # ==============================
 
+# ==============================
+#   GEMINI CLIENT HELPER (FAILOVER SAFE VERSION WITH 3 API KEYS)
+# ==============================
+
 def get_client() -> genai.Client:
     """
-    Returns a configured Gemini client using GEMINI_API_KEY
-    from environment variables.
+    Returns a configured Gemini client.
+    Automatic failover order:
+        1. GEMINI_API_KEY
+        2. GEMINI_API_KEY2
+        3. GEMINI_API_KEY3
+
+    If one fails (quota, rate-limit, auth error, network),
+    next key is used automatically.
+
+    ZERO IMPACT on other functions or session state.
     """
-    api_key = os.getenv("GEMINI_API_KEY")
-    if not api_key:
-        raise RuntimeError("GEMINI_API_KEY is missing in environment variables.")
-    return genai.Client(api_key=api_key)
+
+    primary   = os.getenv("GEMINI_API_KEY")
+    backup_1  = os.getenv("GEMINI_API_KEY2")
+    backup_2  = os.getenv("GEMINI_API_KEY3")
+
+    api_keys = [primary, backup_1, backup_2]
+
+    last_error = None
+
+    for key in api_keys:
+        if not key:
+            continue
+
+        try:
+            # Configure key
+            genai.configure(api_key=key)
+            client = genai.Client(api_key=key)
+
+            # Validate key using tiny "ping"
+            try:
+                client.models.generate_content(
+                    model="gemini-2.0-flash",
+                    contents="ping"
+                )
+            except Exception:
+                # ping failed → try next key
+                continue
+
+            # Success!
+            return client
+
+        except Exception as e:
+            last_error = e
+            continue
+
+    # If ALL keys failed → raise a safe error
+    raise RuntimeError(
+        f"❌ All Gemini API keys failed.\nLast error: {last_error}"
+    )
+
 
 
 # ==============================
