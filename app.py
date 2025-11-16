@@ -260,31 +260,27 @@ def init_state():
         if k not in st.session_state:
             st.session_state[k] = v
 # ============================================================
-# PAGE 1 — NAME INPUT
+# SINGLE PAGE — NAME + GENDER + COUNTRY + MOOD
 # ============================================================
 def page_setup():
     st.image(BUDDY_IMG, width=120)
     st.header("Buddy — Your Personal Study Partner ❤️")
 
-    name = st.text_input("What should I call you, Buddy? 💕", key="input_name")
-    if st.button("Next ➜"):
-        if not name.strip():
-            st.error("Tell me your beautiful name first, sweetheart 😘")
-            return
-        st.session_state.user_info["name"] = name.strip()
-        st.session_state.page = "setup_gender"
-        st.rerun()
+    st.markdown("Tell Buddy a few things, so I can treat you perfectly 😘")
 
+    # -------------------------------
+    # NAME
+    # -------------------------------
+    name = st.text_input(
+        "💖 Buddy, what should I call you?",
+        key="input_name"
+    )
 
-# ============================================================
-# PAGE 2 — GENDER SELECTION
-# ============================================================
-def page_setup_gender():
-    st.image(BUDDY_IMG, width=120)
-    st.header("How should Buddy treat you? 💞")
-
+    # -------------------------------
+    # GENDER
+    # -------------------------------
     gender = st.radio(
-        "Choose:",
+        "💞 How should Buddy treat you?",
         [
             "Pinnacle of Creation / Ashraful Makhlukat 😍 (female)",
             "2nd class creation 😒 (male)"
@@ -292,42 +288,41 @@ def page_setup_gender():
         key="radio_gender"
     )
 
-    if st.button("Next ➜"):
+    # -------------------------------
+    # COUNTRY
+    # -------------------------------
+    country = st.text_input(
+        "🌍 Where were you born and raised?",
+        key="input_country"
+    )
+
+    # -------------------------------
+    # MOOD
+    # -------------------------------
+    mood = st.text_input(
+        "❤️ How do you feel right now?",
+        key="input_mood_before"
+    )
+
+    # -------------------------------
+    # NEXT BUTTON
+    # -------------------------------
+    if st.button("Next ➜", use_container_width=True):
+        if not name.strip():
+            st.error("Tell me your beautiful name first, sweetheart 😘")
+            return
+
+        # Save all details
+        st.session_state.user_info["name"] = name.strip()
+        st.session_state.user_info["country"] = country.strip() or "Unknown"
+        st.session_state.user_info["mood_before"] = mood.strip()
+
         if "female" in gender.lower():
             st.session_state.user_info["gender"] = "female"
         else:
             st.session_state.user_info["gender"] = "male"
 
-        st.session_state.page = "setup_country"
-        st.rerun()
-
-
-# ============================================================
-# PAGE 3 — COUNTRY
-# ============================================================
-def page_setup_country():
-    st.image(BUDDY_IMG, width=120)
-    st.header("Where were you born and raised? 🌍")
-
-    country = st.text_input("Your country:", key="input_country")
-
-    if st.button("Next ➜"):
-        st.session_state.user_info["country"] = country.strip() or "Unknown"
-        st.session_state.page = "setup_mood"
-        st.rerun()
-
-
-# ============================================================
-# PAGE 4 — MOOD
-# ============================================================
-def page_setup_mood():
-    st.image(BUDDY_IMG, width=120)
-    st.header("How do you feel right now, Buddy? ❤️")
-
-    mood = st.text_input("Your mood:", key="input_mood_before")
-
-    if st.button("Next ➜"):
-        st.session_state.user_info["mood_before"] = mood.strip()
+        # Move to PDF upload
         st.session_state.page = "setup_pdf"
         st.rerun()
 
