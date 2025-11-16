@@ -35,3 +35,4 @@ Pillow
 python-telegram-bot==20.0
 python-dotenv
 streamlit
+google-generativeai>=0.8.0
