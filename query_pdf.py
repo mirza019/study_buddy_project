@@ -17,28 +17,24 @@ from google import genai
 # ==============================
 
 # ==============================
-#   GEMINI CLIENT HELPER (FAILOVER SAFE VERSION WITH 3 API KEYS)
+# GEMINI CLIENT FAILOVER (3 KEYS, OLD-STYLE COMPATIBLE)
 # ==============================
 
-def get_client() -> genai.Client:
+import os
+import google.generativeai as genai
+
+
+def get_client():
     """
-    Returns a configured Gemini client.
-    Automatic failover order:
-        1. GEMINI_API_KEY
-        2. GEMINI_API_KEY2
-        3. GEMINI_API_KEY3
-
-    If one fails (quota, rate-limit, auth error, network),
-    next key is used automatically.
-
-    ZERO IMPACT on other functions or session state.
+    Returns a failover-safe Gemini client compatible with old usage:
+        client.models.generate_content(...)
     """
 
-    primary   = os.getenv("GEMINI_API_KEY")
-    backup_1  = os.getenv("GEMINI_API_KEY2")
-    backup_2  = os.getenv("GEMINI_API_KEY3")
-
-    api_keys = [primary, backup_1, backup_2]
+    api_keys = [
+        os.getenv("GEMINI_API_KEY"),
+        os.getenv("GEMINI_API_KEY2"),
+        os.getenv("GEMINI_API_KEY3")
+    ]
 
     last_error = None
 
@@ -49,26 +45,55 @@ def get_client() -> genai.Client:
         try:
             # Configure key
             genai.configure(api_key=key)
-            client = genai.Client(api_key=key)
 
-            # Validate key using tiny "ping"
-            try:
-                client.models.generate_content(
-                    model="gemini-2.0-flash",
-                    contents="ping"
-                )
-            except Exception:
-                # ping failed → try next key
-                continue
+            # Create a test model to validate the key
+            base_model = genai.GenerativeModel("gemini-2.0-flash")
+            base_model.generate_content("ping")
 
-            # Success!
-            return client
+            # -----------------------------------------
+            # WRAPPER: Restores old .models.generate_content
+            # -----------------------------------------
+            class GeminiWrapper:
+                def __init__(self, model):
+                    self._model = model
+
+                    # Adapter to mimic old `client.models.generate_content`
+                    class ModelsAdapter:
+                        def __init__(self, model):
+                            self.model = model
+
+                        def generate_content(self, *args, **kwargs):
+                            """
+                            Converts old calls like:
+                                generate_content(contents=..., model="gemini")
+                            into:
+                                model.generate_content(prompt)
+                            """
+
+                            # Extract prompt
+                            prompt = None
+
+                            if "contents" in kwargs:
+                                prompt = kwargs["contents"]
+                            elif args:
+                                prompt = args[0]
+                            else:
+                                raise ValueError("No prompt provided to generate_content")
+
+                            # Call new SDK method
+                            return self.model.generate_content(prompt)
+
+                    # Attach adapter
+                    self.models = ModelsAdapter(model)
+
+            # Return wrapper instance
+            return GeminiWrapper(base_model)
 
         except Exception as e:
             last_error = e
             continue
 
-    # If ALL keys failed → raise a safe error
+    # If all attempts fail
     raise RuntimeError(
         f"❌ All Gemini API keys failed.\nLast error: {last_error}"
     )
@@ -713,6 +738,51 @@ Now produce the final feedback message:
 
     return response.text.strip()
 
+def _build_chat_persona(user_info):
+    gender = user_info.get("gender", "female")
+    country = user_info.get("country", "default")
+
+    base = f"""
+You are Buddy.
+
+General Style Rules:
+- Normally keep answers precise, warm, simple and to the point.
+- BUT if the user says words like:
+  "explain", "describe", "details", "in depth", 
+  "go deeper", "elaborate", "full summary", "full meaning",
+  then switch to a longer, more detailed explanation.
+- Still keep the tone natural and emotional based on gender.
+
+- Never generate quiz questions or MCQ options.
+- Never create tests unless explicitly asked.
+
+Language:
+Use the same language the user types in (strict rule).
+"""
+
+    if gender == "female":
+        persona = f"""
+You are Buddy — a caring, sweet, supportive boyfriend-type assistant.
+You help patiently and lovingly.
+Do NOT generate quiz questions.
+Do NOT create MCQ options.
+Do NOT prepare study guides.
+ONLY answer the user's question naturally.
+Adapt tone to user’s culture ({country}).
+"""
+    else:
+        persona = f"""
+You are Buddy — a sarcastic, teasing ex-girlfriend-type assistant.
+You help but with attitude.
+Do NOT generate quiz questions.
+Do NOT create MCQ options.
+Do NOT prepare study guides.
+ONLY answer the user's question naturally.
+Adapt tone to user’s culture ({country}).
+"""
+    return persona
+
+
 def run_chat_from_pdf(question, pdf_text, user_info):
     
     client = get_client()
@@ -723,7 +793,7 @@ def run_chat_from_pdf(question, pdf_text, user_info):
     mood_after = user_info.get("mood_after", "unknown")
 
 
-    persona_block = _build_persona_block(user_info)
+    persona_block = _build_chat_persona(user_info)
 
     prompt = f"""
 
