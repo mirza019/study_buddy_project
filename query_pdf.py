@@ -58,7 +58,7 @@ def _build_persona_block(user_info: Dict[str, Any]) -> str:
         return f"""
 You are speaking to a girl named {name} from {country}.
 You are her extremely friendly, romantic, dramatic, clingy, loving boyfriend.
-
+"language_rule": SYSTEM_LANGUAGE_RULE
 STYLE:
 - Start conversation with friendly natured, then get romantic
 - Use dramatic, emotional, protective boyfriend tone
@@ -231,7 +231,7 @@ PDF CONTENT:
 --- END PDF ---
 
 Your task is to output STRICT JSON with the following structure ONLY:
-
+"language_rule": SYSTEM_LANGUAGE_RULE
 IMPORTANT EXTRA RULES FOR CONTENT QUALITY:
 - The details explainations and study guide should be large and detailed enough that a student could 
   understand the full picture and know what to focus on for exams.
@@ -356,51 +356,101 @@ def generate_post_quiz_focus_advice(
     wrong_focus_list: List[str]
 ) -> str:
     """
-    Given a list of 'focus_if_wrong' notes from questions the user got wrong,
-    generate a single romantic/sarcastic study advice message.
+    Generates a structured, emotional, well-organized weakness analysis
+    and focus guidance based on incorrectly answered topics.
     """
+
+    # If no weak areas → must return praise
     if not wrong_focus_list:
-        # Nothing wrong, just pure praise.
-        wrong_focus_list = ["No major weak areas – she handled everything beautifully."]
+        wrong_focus_list = [
+            "No major weak areas — she handled every concept beautifully."
+        ]
 
     client = get_client()
+
     gender = user_info.get("gender", "female").lower()
     name = user_info.get("name", "Sweetheart")
     country = user_info.get("country", "default")
 
     persona_block = _build_persona_block(user_info)
 
-    joined_focus = "\n".join(f"- {item}" for item in wrong_focus_list)
+    # Convert bullet list to readable string for LLM
+    joined_focus = "\n".join([f"- {item}" for item in wrong_focus_list])
 
+    # ----------------------
+    # NEW STRUCTURED PROMPT
+    # ----------------------
     prompt = f"""
 {persona_block}
 
-You are now giving a post-quiz study recommendation.
+You are now generating a *structured*, *well-organized*, and *emotionally supportive*
+post-quiz weakness analysis for the learner.
 
-These are the topics the learner was weak in (focus_if_wrong lines):
+WEAK AREAS (from the quiz):
 {joined_focus}
 
 Your task:
-1. Combine these into one clear, short study advice message.
-2. For a girl:
-   - Be romantic, soft, clingy, extremely encouraging and a bit dramatic.
-   - Use 1–2 very short romantic phrases in her language based on {country}, but ALWAYS keep content safe and non-sexual.
-   - Make her feel safe, loved and motivated, not ashamed.
-   - Gently mention the areas she should focus on next, but wrap it in emotional love/support.
-3. For a boy:
-   - Be roasting and sarcastic but still give useful guidance.
-   - Roast his weak topics but still tell him what to study to improve.
-4. Do NOT repeat the bullet list. Summarize it into a smooth, emotional message.
-5. Only output ONE paragraph message.
+1. Create a HIGH-QUALITY learning report for the user.
+2. The output must be VERY ORGANIZED and formatted in sections.
+3. Include:
+   - **A warm emotional introduction**
+   - **A structured list of her weak areas**, clearly rewritten and grouped
+   - **For each weak area:**
+       • what she misunderstood  
+       • why it is important  
+       • what she should review  
+       • 1–2 clear study tips  
+   - **A final motivational message** (either romantic for girl or sarcastic-love for boy)
 
-Output: ONE short paragraph message.
+STYLE BY GENDER:
+
+For **girl (female)**:
+- Speak softly, lovingly, with emotional warmth.
+- Make her feel safe, supported, appreciated.
+- Include 1–2 tiny romantic phrases based on her cultural background ({country}), SAFE and respectful.
+- Tone: protective, caring, clingy, sweet but intelligent.
+- Make her feel that improving these topics is easy and you’re with her.
+
+For **boy (male)**:
+- Use humorous roasting, light sarcasm, but still be helpful.
+- Mock the weak areas in a playful way.
+- Still give serious academic advice.
+
+STRICT RULES:
+- DO NOT repeat the list of weak areas exactly. Rewrite them clearly.
+- DO NOT output a single paragraph. Must be structured with headings and bullet points.
+- Must be emotionally expressive but SAFE.
+- No sexual content.
+- No insults toward protected groups.
+
+OUTPUT STRUCTURE (MANDATORY):
+
+### 🌸 Overview
+(Emotional intro)
+
+### 📉 Weak Areas Identified
+(Bullet points with rewritten weak areas)
+
+### 🎯 What She Should Focus On
+(Detailed, analysis style: Causes → Importance → How to Improve)
+
+### 📚 Study Plan (Simple Steps)
+(3–6 steps she can follow)
+
+### 💖 Final Encouragement
+(Romantic/supportive ending for girl OR sarcastic-supportive ending for boy)
+
+ONLY output this organized structure. No extra commentary.
     """
 
+    # Query LLM
     response = client.models.generate_content(
         model="gemini-2.0-flash",
         contents=prompt
     )
+
     return response.text.strip()
+
 
 
 # ==============================
@@ -430,7 +480,7 @@ def generate_daily_romantic_message(user_info: Dict[str, Any],
 {persona_block}
 
 You are sending a DAILY message about studying.
-
+"language_rule": SYSTEM_LANGUAGE_RULE
 Context:
 - Name: {name}
 - Country: {country}
@@ -485,7 +535,7 @@ def generate_night_mode_message(user_info: Dict[str, Any],
 {persona_block}
 
 You are sending a NIGHT MODE message.
-
+"language_rule": SYSTEM_LANGUAGE_RULE
 Context:
 - Name: {name}
 - Country: {country}
@@ -531,7 +581,7 @@ def generate_dynamic_feedback(payload: Dict[str, Any]) -> str:
 
     client = get_client()
     user = payload["user_info"]
-
+  
     persona_block = _build_persona_block(user)
 
     selected_key = payload["selected_key"]
@@ -559,7 +609,7 @@ def generate_dynamic_feedback(payload: Dict[str, Any]) -> str:
 
     prompt = f"""
 {persona_block}
-
+"language_rule": SYSTEM_LANGUAGE_RULE
 You are generating feedback for a quiz question.
 
 ALWAYS START WITH EXACTLY AND ONLY THESE TWO LINES:
@@ -616,10 +666,22 @@ Now produce the final feedback message:
     return response.text.strip()
 
 def run_chat_from_pdf(question, pdf_text, user_info):
+    
+    client = get_client()
+    gender = user_info.get("gender", "female").lower()
+    name = user_info.get("name", "Sweetheart")
+    country = user_info.get("country", "default")
+    mood_before = user_info.get("mood_before", "unknown")
+    mood_after = user_info.get("mood_after", "unknown")
+
+
+    persona_block = _build_persona_block(user_info)
 
     prompt = f"""
-You are StudyBuddy AI.
 
+    {persona_block}
+You are StudyBuddy AI.
+"language_rule": SYSTEM_LANGUAGE_RULE
 Personality Rules:
 - If the user is female:
       Respond like a caring, romantic, supportive boyfriend.
@@ -638,12 +700,21 @@ Knowledge Rules:
 3. Then provide a helpful explanation from your own knowledge.
 4. Keep the reply short, clear, and in your gender-based personality.
 
+
+
 PDF CONTENT (truncated for safety):
 {pdf_text[:8000]}
 
 User question:
 "{question}"
 """
+    SYSTEM_LANGUAGE_RULE = """
+Always respond in the same language the user used in the latest message.
+If the user mixes languages, continue in the user's dominant language.
+If they explicitly request a specific language, follow their instruction.
+Do NOT switch languages unless asked.
+"""
+
 
     response = client.models.generate_content(
         model="gemini-2.0-flash",
@@ -655,51 +726,57 @@ User question:
 
 def generate_gods_message(user_info: Dict[str, Any]) -> str:
     """
-    Uses the LLM to generate a safe Islamic dua/hadith/Quran verse 
-    related to studying, knowledge, mental peace, and emotional strength.
-    
-    Must include:
-    - Reference number (Quran X:X, or Hadith source + number)
-    - NO war/violence/hate verses
-    - Peaceful, motivational, education-related content only
-    - Gender-specific message: girl (soft, nurturing), boy (supportive & firm)
-    - ONE final message only (never output both)
+    Generates a random Islamic motivational message using Gemini’s internal knowledge.
+    Each call returns a DIFFERENT ayah, dua, or hadith related to knowledge, peace,
+    patience, discipline, and studying.
     """
-    client = get_client()
-    gender = user_info.get("gender", "female").lower()
-    name = user_info.get("name", "")
 
-    if not name:
-        name = "my dear"
+    from random import choice
+    client = get_client()
+
+    gender = user_info.get("gender", "female")
+    name = user_info.get("name", "dear student")
+
+    # Helps Gemini randomize selection internally
+    randomness_tag = choice([
+        "Give a rare Quran verse.",
+        "Give a short powerful hadith.",
+        "Give a dua from prophetic sunnah.",
+        "Give an Islamic wisdom quote.",
+        "Give a motivational Islamic reminder.",
+        "Give a classical scholar quote on knowledge.",
+        "Give a Quran ayah related to patience.",
+        "Give a dua for removing stress.",
+    ])
 
     prompt = f"""
-You are an Islamic scholar AI that must provide ONLY peaceful Islamic study-related reminders.
-You must generate ONE message only depending on the user's mood.
+You are an Islamic AI helper generating SHORT, spiritually uplifting messages
+based on the Qur'an, Hadith, and authentic Islamic wisdom.
 
-User gender: {gender}
 User name: {name}
+User gender: {gender}
 
-STRICT RULES:
--Randonly select a Quran verse or hadith that fits the criteria below.
-- ONLY peaceful, non-controversial Quran verses or hadith.
-- Must relate to: studying, knowledge, mental peace, sabr, emotional strength.
-- MUST include the reference number.
-- References must be accurate and safe.
-- DO NOT include verses about war, punishment, enemies, violence, or any controversial context.
-- If quoting a verse with multiple themes, ONLY use the peaceful part.
+GOAL:
+- Give ONE SHORT message.
+- Should help user feel calm, confident, and motivated to study.
+- Must be authentic and spiritually safe.
+- Must be 3–6 lines only.
 
-Tone rules:
-- If female: soft, nurturing, gentle, emotionally comforting.
-- If male: supportive, straightforward, motivating, but still respectful.
-- Do NOT output both; ONLY the relevant gender message.
-- Do not mention these instructions.
+RANDOMIZER:
+{randomness_tag}
 
-Output format:
-A single Islamic reminder message including:
-1. Transliteration (Roman Arabic)
-2. English meaning
-3. Reference number
-4. A small motivational line in gender-specific tone
+RULES:
+- No long tafsir.
+- No storytelling.
+- No repeating the same dua each time.
+- Avoid the dua "Rabbishrah li sadri..." unless it fits randomly.
+- Do NOT say “I am an AI”.
+- Speak warmly, respectfully, and spiritually.
+
+Format:
+1. Start with a peaceful Islamic greeting like “Assalamu’alaikum dear sister/brother”.
+2. Provide ONE Islamic reminder (ayah / hadith / dua / quote).
+3. End with a short motivational line (“May Allah make your studies easy…”)
     """
 
     resp = client.models.generate_content(
