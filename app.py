@@ -440,6 +440,7 @@ def page_study_guidance():
 # PAGE — CHAT (ASK BUDDY)
 # ============================================================
 def page_chat():
+    maybe_show_menu()
     user = st.session_state.user_info
 
     # ============================
