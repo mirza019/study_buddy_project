@@ -44,7 +44,8 @@ Upload any **PDF**, and the AI will:
 
 - Extract the content  
 - Summarize it beautifully  
-- Highlight exam-important topics  
+- Highlight exam-important topics
+- 💬 **Chat with your PDF** — ask anything. I can answer from its knowledge based too.
 - Generate **17 romance-escalating MCQs**  
 - Give *romantic encouragement* or *savage roasting*  
 - Use **Bangladesh/India romantic phrases**  
