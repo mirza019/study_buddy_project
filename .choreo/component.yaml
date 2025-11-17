@@ -12,7 +12,7 @@ build:
     - pip install -r requirements.txt
 
 run:
-  command: bash -c "python3 health.py & python3 bot.py"
+  command: bash -c "python3 health.py & python3 webhook.py"
   containerPort: 8000
 
 endpoints:
