@@ -1,6 +1,7 @@
 import os
 from io import BytesIO
 from typing import Dict, Any
+from flask import Flask, request
 
 from dotenv import load_dotenv
 from telegram import (
@@ -28,18 +29,6 @@ from query_pdf import (
     generate_gods_message,
 )
 
-from flask import Flask, request
-
-WEBHOOK_URL = os.getenv("WEBHOOK_URL")  # your Choreo public URL + '/webhook'
-flask_app = Flask(__name__)
-
-@flask_app.route("/")
-def home():
-    return "Bot running OK"
-
-@flask_app.route("/webhook", methods=["POST"])
-def webhook():
-    return "OK", 200
 
 # ============================================================
 # ENVIRONMENT + GLOBAL STATE
@@ -495,23 +484,50 @@ async def handle_buttons(update: Update, context):
         await context.bot.send_message(chat_id, "Restarted. What should I call you?")
         return
 
-
 # ============================================================
 # MAIN
 # ============================================================
+from flask import Flask, request
+
+app_flask = Flask(__name__)
+
+# Webhook route (executed AFTER bot_app is created)
+def create_webhook_route(bot_app):
+    @app_flask.post("/")
+    def webhook():
+        update = Update.de_json(request.json, bot_app.bot)
+        bot_app.update_queue.put(update)
+        return "OK", 200
+    return webhook
+
+
 if __name__ == "__main__":
-    app = ApplicationBuilder()\
-    .token(TELEGRAM_TOKEN)\
-    .connection_pool_size(20)\
-    .read_timeout(60)\
-    .write_timeout(60)\
-    .build()
+    import asyncio
 
+    WEBHOOK_URL = os.getenv("WEBHOOK_URL")
+    if not WEBHOOK_URL:
+        raise RuntimeError("WEBHOOK_URL missing in Choreo Secrets!")
 
-    app.add_handler(CommandHandler("start", start))
-    app.add_handler(MessageHandler(filters.Document.PDF, handle_pdf))
-    app.add_handler(CallbackQueryHandler(handle_buttons))
-    app.add_handler(MessageHandler(filters.TEXT & ~filters.COMMAND, handle_text))
+    # Build bot
+    bot_app = (
+        ApplicationBuilder()
+        .token(TELEGRAM_TOKEN)
+        .build()
+    )
 
-    print("Bot is running…")
-    app.run_polling()
+    # Register handlers
+    bot_app.add_handler(CommandHandler("start", start))
+    bot_app.add_handler(MessageHandler(filters.Document.PDF, handle_pdf))
+    bot_app.add_handler(CallbackQueryHandler(handle_buttons))
+    bot_app.add_handler(MessageHandler(filters.TEXT & ~filters.COMMAND, handle_text))
+
+    # Create webhook route (after bot_app exists)
+    create_webhook_route(bot_app)
+
+    # Set Telegram webhook
+    asyncio.get_event_loop().run_until_complete(
+        bot_app.bot.set_webhook(url=WEBHOOK_URL)
+    )
+
+    print("🚀 Webhook bot running!")
+    app_flask.run(host="0.0.0.0", port=8000)

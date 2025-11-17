@@ -283,7 +283,7 @@ def page_setup():
         "💞 How should Buddy treat you?",
         [
             "Pinnacle of Creation / Ashraful Makhlukat 😍 (female)",
-            "2nd class creation 😒 (male)"
+            "Men 😒"
         ],
         key="radio_gender"
     )
