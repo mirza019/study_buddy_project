@@ -28,18 +28,6 @@ from query_pdf import (
     generate_gods_message,
 )
 
-from flask import Flask, request
-
-WEBHOOK_URL = os.getenv("WEBHOOK_URL")  # your Choreo public URL + '/webhook'
-flask_app = Flask(__name__)
-
-@flask_app.route("/")
-def home():
-    return "Bot running OK"
-
-@flask_app.route("/webhook", methods=["POST"])
-def webhook():
-    return "OK", 200
 
 # ============================================================
 # ENVIRONMENT + GLOBAL STATE
@@ -291,7 +279,7 @@ async def handle_text(update: Update, context):
         await update.message.reply_text(
             "How should I treat you?\n"
             "1. Pinacle of creation/ Ashraful Makhlukat 😍 (female)\n"
-            "2. Men 😒"
+            "2. Man 😒"
         )
         return
 
