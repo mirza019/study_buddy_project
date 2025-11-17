@@ -1,6 +1,8 @@
 import os
 from io import BytesIO
 from typing import Dict, Any
+from flask import Flask
+import threading
 
 from dotenv import load_dotenv
 from telegram import (
@@ -482,19 +484,34 @@ async def handle_buttons(update: Update, context):
         _init_state(chat_id)
         await context.bot.send_message(chat_id, "Restarted. What should I call you?")
         return
+# ------------------------------------------------------------
+# Minimal keep-alive web server for Render free Web Service
+# ------------------------------------------------------------
+app_web = Flask(__name__)
+
+@app_web.route("/")
+def home():
+    return "Bot running", 200
+
+
+def run_keepalive_server():
+    port = int(os.environ.get("PORT", 10000))
+    app_web.run(host="0.0.0.0", port=port)
 
 
 # ============================================================
 # MAIN
 # ============================================================
 if __name__ == "__main__":
-    app = ApplicationBuilder()\
-    .token(TELEGRAM_TOKEN)\
-    .connection_pool_size(20)\
-    .read_timeout(60)\
-    .write_timeout(60)\
-    .build()
+    # Start the keep-alive web server for Render
+    threading.Thread(target=run_keepalive_server).start()
 
+    app = ApplicationBuilder()\
+        .token(TELEGRAM_TOKEN)\
+        .connection_pool_size(20)\
+        .read_timeout(60)\
+        .write_timeout(60)\
+        .build()
 
     app.add_handler(CommandHandler("start", start))
     app.add_handler(MessageHandler(filters.Document.PDF, handle_pdf))
