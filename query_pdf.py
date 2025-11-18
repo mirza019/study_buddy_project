@@ -957,7 +957,7 @@ RULES:
 - Speak warmly, respectfully, and spiritually.
 
 Format:
-1. Start with a peaceful Islamic greeting like “Assalamu’alaikum dear ”.
+1. Start with a peaceful Islamic greeting like “Assalamu’alaikum Dear ”.
 2. Provide ONE Islamic reminder (ayah / hadith / dua / quote).
 3. End with a short motivational line (“May Allah make your studies easy…”)
     """
