@@ -3,7 +3,7 @@ python-dotenv
 httpx
 google-genai
 google-generativeai>=0.8.0
-
+requests
 pypdf
 PyPDF2
 pillow

@@ -325,6 +325,15 @@ def page_setup():
         # Move to PDF upload
         st.session_state.page = "setup_pdf"
         st.rerun()
+         # Footer only here
+    st.markdown(
+        """
+        <div style="text-align: center; margin-top: 50px; font-size: 14px; opacity: 0.8;">
+            Developed with ❤️ by <b>Mirza Shaheen Iqubal</b>
+        </div>
+        """,
+        unsafe_allow_html=True
+    )
 
 
 # ============================================================

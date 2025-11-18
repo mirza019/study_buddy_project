@@ -240,6 +240,8 @@ async def start(update: Update, context):
         "📚 Study Buddy AI\n\nTap Start to begin 💕",
         reply_markup=build_start_keyboard()
     )
+    await update.message.reply_text("**Developed with ❤️ by Mirza Shaheen Iqubal**", parse_mode="Markdown")
+
 
 
 async def handle_text(update: Update, context):
@@ -498,20 +500,14 @@ def run_keepalive_server():
     port = int(os.environ.get("PORT", 10000))
     app_web.run(host="0.0.0.0", port=port)
 
+from keep_alive import keep_alive
 
-# ============================================================
-# MAIN
-# ============================================================
-if __name__ == "__main__":
-    # Start the keep-alive web server for Render
-    threading.Thread(target=run_keepalive_server).start()
-
-    app = ApplicationBuilder()\
-        .token(TELEGRAM_TOKEN)\
-        .connection_pool_size(20)\
-        .read_timeout(60)\
-        .write_timeout(60)\
+def run_bot():
+    app = (
+        ApplicationBuilder()
+        .token(TELEGRAM_TOKEN)
         .build()
+    )
 
     app.add_handler(CommandHandler("start", start))
     app.add_handler(MessageHandler(filters.Document.PDF, handle_pdf))
@@ -520,3 +516,31 @@ if __name__ == "__main__":
 
     print("Bot is running…")
     app.run_polling()
+
+from keep_alive import keep_alive
+
+# ============================================================
+# MAIN
+# ============================================================
+def run_bot():
+    app = (
+        ApplicationBuilder()
+        .token(TELEGRAM_TOKEN)
+        .connection_pool_size(20)
+        .read_timeout(60)
+        .write_timeout(60)
+        .build()
+    )
+
+    app.add_handler(CommandHandler("start", start))
+    app.add_handler(MessageHandler(filters.Document.PDF, handle_pdf))
+    app.add_handler(CallbackQueryHandler(handle_buttons))
+    app.add_handler(MessageHandler(filters.TEXT & ~filters.COMMAND, handle_text))
+
+    print("Bot is running…")
+    app.run_polling()
+
+
+if __name__ == "__main__":
+    keep_alive()   # Start Flask ping server (Railway keeps it awake)
+    run_bot()      # Start the Telegram bot
