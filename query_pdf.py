@@ -6,35 +6,7 @@ from google.genai import Client
 from dotenv import load_dotenv
 load_dotenv()
 
-client = get_rotating_client()
-
-from google.genai import Client
-import os
-
-GEMINI_KEYS = [
-    os.getenv("GEMINI_KEY1"),
-    os.getenv("GEMINI_KEY2"),
-    os.getenv("GEMINI_KEY3"),
-]
-
-def get_rotating_client():
-    """Try API keys one-by-one until one works."""
-    last_error = None
-
-    for key in GEMINI_KEYS:
-        if not key:
-            continue
-
-        try:
-            client = Client(api_key=key)
-            # test small request
-            client.models.list()  
-            return client
-        except Exception as e:
-            last_error = e
-            continue
-
-    raise RuntimeError(f"❌ All Gemini API keys failed.\nLast error: {last_error}")
+client = Client(api_key=os.getenv("GEMINI_API_KEY"))
 
 from PyPDF2 import PdfReader
 from google import genai
@@ -51,35 +23,6 @@ from google import genai
 import os
 import google.generativeai as genai
 
-from google.genai import Client
-import os
-
-GEMINI_KEYS = [
-    os.getenv("GEMINI_KEY1"),
-    os.getenv("GEMINI_KEY2"),
-    os.getenv("GEMINI_KEY3"),
-]
-
-def get_rotating_client():
-    """Try API keys one-by-one until one works."""
-    last_error = None
-
-    for key in GEMINI_KEYS:
-        if not key:
-            continue
-
-        try:
-            client = Client(api_key=key)
-            # test small request
-            client.models.list()  
-            return client
-        except Exception as e:
-            last_error = e
-            continue
-
-    raise RuntimeError(f"❌ All Gemini API keys failed.\nLast error: {last_error}")
-
-client = get_rotating_client()
 
 def get_client():
     """
@@ -155,14 +98,6 @@ def get_client():
         f"❌ All Gemini API keys failed.\nLast error: {last_error}"
     )
 
-from google.genai import Client
-import os
-
-GEMINI_KEYS = [
-    os.getenv("GEMINI_KEY1"),
-    os.getenv("GEMINI_KEY2"),
-    os.getenv("GEMINI_KEY3"),
-]
 
 
 # ==============================
@@ -957,7 +892,7 @@ RULES:
 - Speak warmly, respectfully, and spiritually.
 
 Format:
-1. Start with a peaceful Islamic greeting like “Assalamu’alaikum Dear ”.
+1. Start with a peaceful Islamic greeting like “Assalamu’alaikum dear ”.
 2. Provide ONE Islamic reminder (ayah / hadith / dua / quote).
 3. End with a short motivational line (“May Allah make your studies easy…”)
     """
