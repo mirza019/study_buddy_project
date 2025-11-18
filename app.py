@@ -638,7 +638,7 @@ def page_results():
     st.subheader("📝 Full Review")
 
     for i, q in enumerate(quiz["questions"], start=1):
-        st.markdown(f"### ❓ Question {i}")
+        st.markdown(f"### Question {i}")
 
         # Question text
         render_text(q["question_text"])

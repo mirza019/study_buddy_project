@@ -6,7 +6,35 @@ from google.genai import Client
 from dotenv import load_dotenv
 load_dotenv()
 
-client = Client(api_key=os.getenv("GEMINI_API_KEY"))
+client = get_rotating_client()
+
+from google.genai import Client
+import os
+
+GEMINI_KEYS = [
+    os.getenv("GEMINI_KEY1"),
+    os.getenv("GEMINI_KEY2"),
+    os.getenv("GEMINI_KEY3"),
+]
+
+def get_rotating_client():
+    """Try API keys one-by-one until one works."""
+    last_error = None
+
+    for key in GEMINI_KEYS:
+        if not key:
+            continue
+
+        try:
+            client = Client(api_key=key)
+            # test small request
+            client.models.list()  
+            return client
+        except Exception as e:
+            last_error = e
+            continue
+
+    raise RuntimeError(f"❌ All Gemini API keys failed.\nLast error: {last_error}")
 
 from PyPDF2 import PdfReader
 from google import genai
@@ -23,6 +51,35 @@ from google import genai
 import os
 import google.generativeai as genai
 
+from google.genai import Client
+import os
+
+GEMINI_KEYS = [
+    os.getenv("GEMINI_KEY1"),
+    os.getenv("GEMINI_KEY2"),
+    os.getenv("GEMINI_KEY3"),
+]
+
+def get_rotating_client():
+    """Try API keys one-by-one until one works."""
+    last_error = None
+
+    for key in GEMINI_KEYS:
+        if not key:
+            continue
+
+        try:
+            client = Client(api_key=key)
+            # test small request
+            client.models.list()  
+            return client
+        except Exception as e:
+            last_error = e
+            continue
+
+    raise RuntimeError(f"❌ All Gemini API keys failed.\nLast error: {last_error}")
+
+client = get_rotating_client()
 
 def get_client():
     """
@@ -98,6 +155,14 @@ def get_client():
         f"❌ All Gemini API keys failed.\nLast error: {last_error}"
     )
 
+from google.genai import Client
+import os
+
+GEMINI_KEYS = [
+    os.getenv("GEMINI_KEY1"),
+    os.getenv("GEMINI_KEY2"),
+    os.getenv("GEMINI_KEY3"),
+]
 
 
 # ==============================
