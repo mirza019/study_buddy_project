@@ -309,7 +309,7 @@ def page_setup():
     # -------------------------------
     if st.button("Next ➜", use_container_width=True):
         if not name.strip():
-            st.error("Tell me your beautiful name first, sweetheart 😘")
+            st.error("Tell me your beautiful name first, Buddy 😘")
             return
 
         # Save all details
@@ -329,7 +329,7 @@ def page_setup():
     st.markdown(
         """
         <div style="text-align: center; margin-top: 50px; font-size: 14px; opacity: 0.8;">
-            Developed with ❤️ by <b>Mirza Shaheen Iqubal</b>
+            Developed with care by <b>Mirza Shaheen Iqubal</b>
         </div>
         """,
         unsafe_allow_html=True
@@ -839,15 +839,6 @@ def main():
     # ROUTES
     if page == "setup":
         page_setup()
-
-    elif page == "setup_gender":
-        page_setup_gender()
-
-    elif page == "setup_country":
-        page_setup_country()
-
-    elif page == "setup_mood":
-        page_setup_mood()
 
     elif page == "setup_pdf":
         page_setup_pdf()

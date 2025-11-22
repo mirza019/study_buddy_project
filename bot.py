@@ -309,7 +309,7 @@ async def handle_text(update: Update, context):
     if step == "ask_mood_before":
         user["mood_before"] = text
         state["step"] = "await_pdf"
-        await update.message.reply_text("📄 Now send your study PDF… ❤️")
+        await update.message.reply_text("📄 Now send your study PDF… Be Kind and Upload One Pdf Less Than 18MB ❤️")
         return
 
     # mood after results
