@@ -897,7 +897,7 @@ RULES:
 - Speak warmly, respectfully, and spiritually.
 
 Format:
-1. Start with a peaceful Islamic greeting in User's Language based on user's {country} language like “Peace Be Upon You dear {name} ”.
+1. Start with a peaceful Islamic greeting in User's Language based on user's {country} language like “Peace Be Upon You, Dear {name} ”.
 2. Provide ONE Islamic reminder (ayah / hadith / dua / quote).
 3. End with a short motivational line (“May Allah make your studies easy…”)
 4. At last say Goodbye in user's {country} language. For Example, if user is from Bangladesh, say "Khuda Hafez", if the user is from Iran say "Khodafez".
