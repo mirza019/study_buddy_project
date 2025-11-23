@@ -840,15 +840,6 @@ def main():
     if page == "setup":
         page_setup()
 
-    elif page == "setup_gender":
-        page_setup_gender()
-
-    elif page == "setup_country":
-        page_setup_country()
-
-    elif page == "setup_mood":
-        page_setup_mood()
-
     elif page == "setup_pdf":
         page_setup_pdf()
 
