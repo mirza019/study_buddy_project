@@ -822,11 +822,17 @@ User question:
 "{question}"
 """
     SYSTEM_LANGUAGE_RULE = """
-Always respond in the same language the user used in the latest message.
-If the user mixes languages, continue in the user's dominant language.
-If they explicitly request a specific language, follow their instruction.
-Do NOT switch languages unless asked.
+You MUST respond mainly in the same language the user used in their latest message.
+
+However:
+- If the user's profile indicates their native language, you may optionally include 10–20 percent of their native, short phrases, emotional words, or playful teasing in Bangla.
+- These Bangla phrases must NOT affect clarity and should be short (1–4 words).
+- Never respond fully in user's {country} language unless the user asks.
+- If the user writes fully in English, keep 80–90 percent of English and lightly sprinkle user's country {country} language.
+- If the user mixes languages, follow the dominant language.
+- If the user requests a specific language, follow that strictly.
 """
+
 
 
     response = client.models.generate_content(
