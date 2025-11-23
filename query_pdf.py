@@ -821,8 +821,10 @@ PDF CONTENT (truncated for safety):
 User question:
 "{question}"
 """
-    SYSTEM_LANGUAGE_RULE = """
-Always respond in the same language the user used in the latest message.
+    SYSTEM_LANGUAGE_RULE = 'English is the default language for all responses.'
+
+"""
+Always respond in the same language the user used in the asking question.
 If the user mixes languages, continue in the user's dominant language.
 If they explicitly request a specific language, follow their instruction.
 Do NOT switch languages unless asked.
