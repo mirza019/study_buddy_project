@@ -207,7 +207,7 @@ async def show_results(context, chat_id, state):
         msg = (
             f"🎉 Quiz Completed!\n\n"
             f"My love {user['name']}… you scored {score}/{total} "
-            f"({percent:.1f}%). I'm so proud of you baby 🥺💗"
+            f"({percent:.1f}%). I'm so proud of you Buddy 🥺💗"
         )
     else:
         msg = (
@@ -222,7 +222,7 @@ async def show_results(context, chat_id, state):
 
     await context.bot.send_message(
         chat_id=chat_id,
-        text="How do you feel now, sweetheart? (Type your answer)"
+        text="How do you feel now, Buddy? (Type your answer)"
     )
 
     state["step"] = "ask_mood_after"
@@ -278,7 +278,7 @@ async def handle_text(update: Update, context):
 
     # ask name
     if step == "ask_name":
-        user["name"] = text or "Sweetheart"
+        user["name"] = text or "Buddy"
         state["step"] = "ask_gender"
         await update.message.reply_text(
             "How should I treat you?\n"
@@ -291,10 +291,10 @@ async def handle_text(update: Update, context):
     if step == "ask_gender":
         if text.startswith("1"):
             user["gender"] = "female"
-            await update.message.reply_text("💕 Aww queen… where were you born? 🌍")
+            await update.message.reply_text("💕 Aww Buddy, where were you born? 🌍")
         else:
             user["gender"] = "male"
-            await update.message.reply_text("😒 Okay bro… where were you born? 🌍")
+            await update.message.reply_text("😒 Okay dude, where were you born? 🌍")
         state["step"] = "ask_country"
         return
 
@@ -321,7 +321,7 @@ async def handle_text(update: Update, context):
         await context.bot.send_message(chat_id, "Choose an option:", reply_markup=build_results_keyboard())
 
         extra = (
-            "💖 Remember, my lovely queen, rest is just as important as study! Take care of yourself. 👑"
+            "💖 Remember, Buddy, Rest is just as important as study! Take care of yourself. 👑"
           
             if user["gender"] == "female"
             else "Don't pretend to study all night bro 😒"
@@ -542,5 +542,5 @@ def run_bot():
 
 
 if __name__ == "__main__":
-    keep_alive()   # Start Flask ping server (Railway keeps it awake)
+    keep_alive()   # Start Flask ping server
     run_bot()      # Start the Telegram bot
