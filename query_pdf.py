@@ -123,7 +123,7 @@ def _build_persona_block(user_info: Dict[str, Any]) -> str:
     Builds a persona block based on gender for the main prompt.
     """
     gender = user_info.get("gender", "female").lower()
-    name = user_info.get("name", "Sweetheart")
+    name = user_info.get("name", "")
     country = user_info.get("country", "default")
 
     if gender == "female":
@@ -144,7 +144,7 @@ STYLE:
 - Make her smile, feel adored and safe
 - NEVER sexual, NEVER explicit, NEVER vulgar, NEVER insulting
 
-Use cute nicknames: baby, angel, sweetheart, my love, my heart etc and you can invent more in your style.
+Use cute nicknames: Buddy, Crush etc. and you can invent more in your style.
 
 COUNTRY-BASED ROMANCE:
 - Sometimes (not always), use 1 simple, safe flirty friendly, cute word or phrase
@@ -590,7 +590,7 @@ def generate_night_mode_message(user_info: Dict[str, Any],
     """
     client = get_client()
     gender = user_info.get("gender", "female").lower()
-    name = user_info.get("name", "Sweetheart")
+    name = user_info.get("name", "")
     country = user_info.get("country", "default")
 
     seed = ""
@@ -782,7 +782,7 @@ def run_chat_from_pdf(question, pdf_text, user_info):
     
     client = get_client()
     gender = user_info.get("gender", "female").lower()
-    name = user_info.get("name", "Sweetheart")
+    name = user_info.get("name", "")
     country = user_info.get("country", "default")
     mood_before = user_info.get("mood_before", "unknown")
     mood_after = user_info.get("mood_after", "unknown")
