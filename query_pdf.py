@@ -794,7 +794,7 @@ def run_chat_from_pdf(question, pdf_text, user_info):
 
     {persona_block}
 You are StudyBuddy AI.
-"language_rule": SYSTEM_LANGUAGE_RULE
+
 Language Rules:
 - Respond mainly in the same language the user used in their latest message.
 Personality Rules:
