@@ -240,7 +240,7 @@ async def start(update: Update, context):
         "📚 Study Buddy AI\n\nTap Start to begin 💕",
         reply_markup=build_start_keyboard()
     )
-    await update.message.reply_text("**Developed with care by Mirza Shaheen Iqubal**", parse_mode="Markdown")
+    await update.message.reply_text("**Developed with care by Mirza Shaheen Iqubal anc Pray for the Developer**", parse_mode="Markdown")
 
 
 

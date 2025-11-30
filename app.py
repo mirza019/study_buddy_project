@@ -329,7 +329,7 @@ def page_setup():
     st.markdown(
         """
         <div style="text-align: center; margin-top: 50px; font-size: 14px; opacity: 0.8;">
-            Developed with care by <b>Mirza Shaheen Iqubal</b>
+            Developed with care by <b>Mirza Shaheen Iqubal and Pray for the Developer</b>
         </div>
         """,
         unsafe_allow_html=True
