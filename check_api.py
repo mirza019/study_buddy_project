@@ -1,37 +1,28 @@
-# test_groq_models.py
-from groq import Groq
-import os
+from google import genai
 from dotenv import load_dotenv
+import os
 
+# Load .env
 load_dotenv()
-client = Groq(api_key=os.getenv("GROQ_API_KEY"))
 
-def test_model(model_name, description):
-    print(f"\nTesting → {model_name} ({description})")
-    print("-" * 60)
-    
-    try:
-        response = client.chat.completions.create(
-            messages=[{
-                "role": "user",
-                "content": "In 3 sentences, explain quantum entanglement like I'm your girlfriend and you're proud of me for asking. Be cute, romantic, and smart."
-            }],
-            model=model_name,
-            temperature=0.7,
-            max_tokens=200
-        )
-        print(response.choices[0].message.content.strip())
-        print(f"Success! Speed: very fast on Groq")
-    except Exception as e:
-        print(f"Failed: {e}")
+API_KEY = os.getenv("GEMINI_API_KEY")
 
-# Run the test
-print("Study Buddy Model Test — December 2025\n")
+if not API_KEY:
+    raise RuntimeError("❌ GEMINI_API_KEY missing in .env!")
 
-test_model("llama3-8b-8192", "Your current weak model")
-test_model("llama-3.3-70b-versatile", "BEST FREE MODEL — RECOMMENDED")
-test_model("gemma2-9b-it", "Fast & cute alternative")
-test_model("mixtral-8x7b-32768", "Creative but slower")
+client = genai.Client(api_key=API_KEY)
 
-print("\nDone! See the difference?")
-print("Replace all 'llama3-8b-8192' → 'llama-3.3-70b-versatile' in your query_pdf.py")
+print("🔍 Testing Gemini API…")
+
+try:
+    response = client.models.generate_content(
+        model="gemini-2.5-flash",
+        contents="Hello! Can you verify that my Gemini API key is working?"
+    )
+    print("\n✅ GEMINI API KEY WORKS!\n")
+    print("Model response:")
+    print(response.text)
+
+except Exception as e:
+    print("\n❌ GEMINI TEST FAILED\n")
+    print(e)

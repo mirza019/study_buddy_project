@@ -2,11 +2,14 @@ google-genai
 pypdf
 streamlit
 python-dotenv
+openai
 PyPDF2
 httpx==0.23.3
 pydantic
 python-telegram-bot==20.0
+pymupdf
 huggingface_hub
+pillow
 transformers
 accelerate
 torch

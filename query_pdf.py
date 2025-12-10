@@ -8,22 +8,94 @@ load_dotenv()
 
 
 from PyPDF2 import PdfReader
-from groq import Groq
+from google import genai
 
 
 # ==============================
-#   GROQ CLIENT HELPER
+#   GEMINI CLIENT HELPER
 # ==============================
+
+# ==============================
+# GEMINI CLIENT FAILOVER (3 KEYS, OLD-STYLE COMPATIBLE)
+# ==============================
+
+import os
+import google.generativeai as genai
+
 
 def get_client():
     """
-    Returns a Groq client.
+    Returns a failover-safe Gemini client compatible with old usage:
+        client.models.generate_content(...)
     """
-    api_key = os.getenv("GROQ_API_KEY")
-    if not api_key:
-        raise RuntimeError("GROQ_API_KEY environment variable not set.")
-    
-    return Groq(api_key=api_key)
+
+    api_keys = [
+        os.getenv("GEMINI_API_KEY"),
+        os.getenv("GEMINI_API_KEY2"),
+        os.getenv("GEMINI_API_KEY3")
+    ]
+
+    last_error = None
+
+    for key in api_keys:
+        if not key:
+            continue
+
+        try:
+            # Configure key
+            genai.configure(api_key=key)
+
+            # Create a test model to validate the key
+            base_model = genai.GenerativeModel("gemini-2.5-flash")
+            base_model.generate_content("ping")
+
+            # -----------------------------------------
+            # WRAPPER: Restores old .models.generate_content
+            # -----------------------------------------
+            class GeminiWrapper:
+                def __init__(self, model):
+                    self._model = model
+
+                    # Adapter to mimic old `client.models.generate_content`
+                    class ModelsAdapter:
+                        def __init__(self, model):
+                            self.model = model
+
+                        def generate_content(self, *args, **kwargs):
+                            """
+                            Converts old calls like:
+                                generate_content(contents=..., model="gemini")
+                            into:
+                                model.generate_content(prompt)
+                            """
+
+                            # Extract prompt
+                            prompt = None
+
+                            if "contents" in kwargs:
+                                prompt = kwargs["contents"]
+                            elif args:
+                                prompt = args[0]
+                            else:
+                                raise ValueError("No prompt provided to generate_content")
+
+                            # Call new SDK method
+                            return self.model.generate_content(prompt)
+
+                    # Attach adapter
+                    self.models = ModelsAdapter(model)
+
+            # Return wrapper instance
+            return GeminiWrapper(base_model)
+
+        except Exception as e:
+            last_error = e
+            continue
+
+    # If all attempts fail
+    raise RuntimeError(
+        f"❌ All Gemini API keys failed.\nLast error: {last_error}"
+    )
 
 
 
@@ -323,16 +395,12 @@ Each question must clearly reflect the intended difficulty level.
 
     """
 
-    chat_completion = client.chat.completions.create(
-        messages=[
-            {
-                "role": "user",
-                "content": prompt,
-            }
-        ],
-        model="llama-3.3-70b-versatile",
+    response = client.models.generate_content(
+        model="gemini-2.5-flash",
+        contents=prompt
     )
-    raw_text = chat_completion.choices[0].message.content
+
+    raw_text = response.text.strip()
 
     # Clean ```json fences if model adds them
     if raw_text.startswith("```"):
@@ -343,7 +411,7 @@ Each question must clearly reflect the intended difficulty level.
     try:
         quiz_data = json.loads(raw_text)
     except json.JSONDecodeError as e:
-        raise RuntimeError(f"Failed to parse JSON from Groq: {e}\nRaw text:\n{raw_text}")
+        raise RuntimeError(f"Failed to parse JSON from Gemini: {e}\nRaw text:\n{raw_text}")
 
     return quiz_data
 
@@ -445,16 +513,12 @@ ONLY output this organized structure. No extra commentary.
     """
 
     # Query LLM
-    chat_completion = client.chat.completions.create(
-        messages=[
-            {
-                "role": "user",
-                "content": prompt,
-            }
-        ],
-        model="llama-3.3-70b-versatile",
+    response = client.models.generate_content(
+        model="gemini-2.5-flash",
+        contents=prompt
     )
-    return chat_completion.choices[0].message.content.strip()
+
+    return response.text.strip()
 
 
 
@@ -507,16 +571,11 @@ Task:
 Output: One short message only.
     """
 
-    chat_completion = client.chat.completions.create(
-        messages=[
-            {
-                "role": "user",
-                "content": prompt,
-            }
-        ],
-        model="llama-3.3-70b-versatile",
+    response = client.models.generate_content(
+        model="gemini-2.5-flash",
+        contents=prompt
     )
-    return chat_completion.choices[0].message.content.strip()
+    return response.text.strip()
 
 
 # ==============================
@@ -571,20 +630,26 @@ Output rules:
 
     """
 
-    chat_completion = client.chat.completions.create(
-        messages=[
-            {
-                "role": "user",
-                "content": prompt,
-            }
-        ],
-        model="llama-3.3-70b-versatile",
+    response = client.models.generate_content(
+        model="gemini-2.5-flash",
+        contents=prompt
     )
-    return chat_completion.choices[0].message.content.strip()
+    return response.text.strip()
 
 def generate_dynamic_feedback(payload: Dict[str, Any]) -> str:
+    """
+    Generates dynamic feedback using the LLM with strict formatting rules.
+    Ensures:
+    - Always shows selected and correct answer first
+    - Explains why the correct answer is correct
+    - If wrong: explains why the user’s answer is wrong
+    - Female: romantic boyfriend with optional country phrase
+    - Male: dry sarcastic ex, factual correction, minimal praise
+    """
+
     client = get_client()
     user = payload["user_info"]
+  
     persona_block = _build_persona_block(user)
 
     selected_key = payload["selected_key"]
@@ -592,83 +657,81 @@ def generate_dynamic_feedback(payload: Dict[str, Any]) -> str:
     correct_key = payload["correct_key"]
     correct_text = payload["correct_text"]
 
+    base_correct = payload["base_correct"]
+    base_incorrect = payload["base_incorrect"]
+    base_pass = payload["base_pass"]
+
+    # Determine result type
     if selected_key == correct_key:
         result_type = "correct"
-        base = payload["base_correct"]
+        base = base_correct
     elif selected_key == "E":
         result_type = "pass"
-        base = payload["base_pass"]
+        base = base_pass
     else:
         result_type = "incorrect"
-        base = payload["base_incorrect"]
+        base = base_incorrect
 
     gender = user.get("gender", "female").lower()
     country = user.get("country", "Unknown")
 
-    # THE TRICK: Use triple newlines + "→" to FORCE separation
     prompt = f"""
 {persona_block}
 "language_rule": SYSTEM_LANGUAGE_RULE
+You are generating feedback for a quiz question.
 
-You are giving feedback. 
-OUTPUT EXACTLY THIS STRUCTURE — DO NOT MERGE LINES:
+ALWAYS START WITH EXACTLY AND ONLY THESE TWO LINES:
+"You selected: [{selected_key}] {selected_text}"
+"Correct answer: [{correct_key}] {correct_text}"
 
-You selected: [{selected_key}] {selected_text}
+AFTER THESE TWO LINES, FOLLOW THE RULES BELOW:
+--------------------------------------------------------
 
-→
+1. EXPLANATION SECTION (MANDATORY)
+   - “Why the correct answer is correct:” give a short factual explanation based ONLY on the question context.
+   - If the user answered incorrectly:
+        - Add: “Why your answer was wrong:” short factual correction.
 
-Correct answer: [{correct_key}] {correct_text}
+2. THEN APPLY PERSONA BASED ON GENDER:
 
-"""
+IF FEMALE (romantic mode):
+    - After explanations, shift into caring, emotional, teasing way, dramatic friend style who posses secret love for her.
+    - Emotional, loving, protective tone.
+    - Sometimes (randomly), include ONE short cute phrase from her language based on her country: {country}.
+      Examples if Iran: azizam, eshgham — ALWAYS include English meaning after in parentheses.
+    - DO NOT be sexual. Keep SAFE.
 
-    if result_type == "incorrect":
-        prompt += f"""
+IF MALE (sarcastic mode):
+    - Extream long sarcasm like Ex Girlfriend.
+    - Minimal praise but long roasting in sarcastic way for correct answers.
+    - Wrong answers:
+        * annoyed and rude tone
+        * slight eye-roll energy
+        * “Anyway… try reading properly next time.”
+    - NO romance, NO cute words.
+    - Use country phrases to make him feel low and discouraged.
+    - DO NOT be cruel or unsafe.
 
-Why your answer was wrong:
-[3-4 short sentences only — why [{selected_key}] is wrong in a flirty/caring way if Female or sarcastic/rude way if Male]
+3. LENGTH & STYLE RULES:
+    - Result must sound NATURAL, unique.
+    - Not too long. 5–8 lines total.
+    - DO NOT copy any example from the prompt.
+    - DO NOT output labels like “Explanation:” or “Feedback:”. Only natural sentences.
 
-"""
+4. Output ONLY the final message. No labels, no markdown.
 
-    if result_type != "pass":
-        prompt += f"""
-
-Why the correct answer is right:
-[1-2 short sentences only]
-
-Source: [MUST include page number + topic/section. Examples:
-→ Page 3, Section 1.1 – Enrollment Process
-→ Page 7 – Chemical Bonding
-→ Page 12, Figure 2.1 – Reaction Mechanism]
-
-"""
-
-    prompt += f"""
-
-→ NOW YOUR EMOTIONAL REACTION STARTS HERE
-(Everything above must stay exactly as written — do NOT merge or reword)
-
-Continue with your full persona:
-- Female: loving, proud, cute nicknames, optional 2 cultural word from {country}
-- You are her close friend who has a secret love for her 
-— NOT a brother, NOT a sibling.
-- Male: savage, sarcastic, roast him
-- Keep emotional part 5–8 lines
-- Sound natural, unique, emotional
-- NEVER use markdown or labels
-
-Reference tone (do NOT copy):
+BASE EMOTION REFERENCE (DO NOT COPY):
 "{base}"
 
-Now output the full feedback starting exactly with the format above:
+Now produce the final feedback message:
 """
 
-    chat_completion = client.chat.completions.create(
-        messages=[{"role": "user", "content": prompt}],
-        model="llama-3.3-70b-versatile",
-        temperature=0.7,
-        max_tokens=700
+    response = client.models.generate_content(
+        model="gemini-2.5-flash",
+        contents=prompt
     )
-    return chat_completion.choices[0].message.content.strip()
+
+    return response.text.strip()
 
 def _build_chat_persona(user_info):
     gender = user_info.get("gender", "female")
@@ -695,7 +758,6 @@ Use the same language the user types in (strict rule).
     if gender == "female":
         persona = f"""
 You are Buddy — a caring, sweet, supportive boyfriend-type assistant.
-You are her close friend who has a secret crush on her — NOT a brother, NOT a sibling.
 You help patiently and lovingly.
 Do NOT generate quiz questions.
 Do NOT create MCQ options.
@@ -776,17 +838,12 @@ However:
 
 
 
-    chat_completion = client.chat.completions.create(
-        messages=[
-            {
-                "role": "user",
-                "content": prompt,
-            }
-        ],
-        model="llama-3.3-70b-versatile",
+    response = client.models.generate_content(
+        model="gemini-2.5-flash",
+        contents=prompt
     )
 
-    return chat_completion.choices[0].message.content
+    return response.text
 
 
 def generate_gods_message(user_info: Dict[str, Any]) -> str:
@@ -843,7 +900,7 @@ RULES:
 - Speak warmly, respectfully, and spiritually.
 
 Format:
-1. Start with a peaceful Islamic greeting in User's Language based on user's {country} language fonts For Example, if user is from English. Speaking country, say“Peace Be Upon You, Dear {name} ”, if user is from Iran say "Salam {name} ", if user is from Bangladesh say "Assalamu Alaikum {name} ".
+1. Start with a peaceful Islamic greeting in User's Language based on user's {country} language fonts For Example, if user is from English. Speaking country, say“Peace Be Upon You, Dear {name} ”, if user is from Iran say "Salam {name} ".
 2. Provide ONE Islamic reminder (ayah / hadith / dua / quote).
 3. End with a short motivational line (“May Allah make your studies easy…”)
 4. At last say Goodbye in user's {country} language. For Example, if user is from Bangladesh, say "Khuda Hafez", if the user is from Iran say "Khodafez".
@@ -851,14 +908,9 @@ Format:
 OUTPUT
     """
 
-    chat_completion = client.chat.completions.create(
-        messages=[
-            {
-                "role": "user",
-                "content": prompt,
-            }
-        ],
-        model="llama-3.3-70b-versatile",
+    resp = client.models.generate_content(
+        model="gemini-2.5-flash",
+        contents=prompt
     )
 
-    return chat_completion.choices[0].message.content.strip()
+    return resp.text.strip()
