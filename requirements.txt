@@ -3,6 +3,7 @@ python-dotenv
 httpx
 google-genai
 google-generativeai>=0.8.0
+groq
 requests
 pypdf
 PyPDF2

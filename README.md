@@ -1,9 +1,9 @@
 <div align="center">
 
 # 💘 Study Buddy AI  
-### An AI-powered study assistant that quizzes you like a *caring, encouraging, overly-supportive friend* — or a *savage, sarcastic ex* — using Gemini.
+### An AI-powered study assistant that quizzes you like a *caring, encouraging, overly-supportive friend* — or a *savage, sarcastic ex* — using Groq.
 
-🔥 Built with **Streamlit + Gemini 2.0 Flash**  
+🔥 Built with **Streamlit + Groq (Llama 3)**  
 📚 Upload a PDF → Get personalized study guide + 17 MCQs  
 💞 Mood tracking, country-based romantic phrases, whisper-night mode  
 🧠 Perfect for exam revision with emotion, drama, and romance  
@@ -27,7 +27,7 @@ Upload any study PDF and instantly:
 - 📘 Automatic PDF reading & soft summary  
 - 📝 Personalized study guide  
 - 💬 **Chat with your PDF** — ask anything  
-- ❗ If your question is NOT in the PDF, the bot will tell you and answer using general knowledge (like ChatGPT/Gemini)  
+- ❗ If your question is NOT in the PDF, the bot will tell you and answer using general knowledge (like ChatGPT/Llama)  
 - 🧠 Smart 17-question quiz  
 - 🎯 Weak-topic detection & study advice  
 
